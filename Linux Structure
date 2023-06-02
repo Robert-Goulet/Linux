@@ -1,0 +1,13 @@
+#Linux Structure
+
+/
+#primary hierarchy root and root directory of the entire file system hierarchy
+
+/bin
+#command binaries that need to be available in single user mode
+
+/boot
+#boot loader files, e.g, kernels, initrd. 
+
+/dev
+#
