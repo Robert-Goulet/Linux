@@ -1,0 +1,14 @@
+#Linux Networking Commands
+#
+netstat -tuln
+#display all listening TCP and UDP connections with their associated process names and port numbers
+
+netstat -natp
+#display all active TCP connections with their respective names, ip addresses, and port numbers
+
+netstat -ntulp
+#display all active tcp connections and listening udp ports with their associated process names, ip addresses, and port numbers 
+
+netstat -apt
+#display all active connections, including both tcp and udp, with their process names, ip addresses, and port numbers
+

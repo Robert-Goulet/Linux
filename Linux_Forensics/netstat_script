@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Get the current date and time
+current_date=$(date +"%Y-%m-%d")
+current_time=$(date +"%H-%M-%S")
+
+# Filename for the output text file
+output_file="netstat_${current_date}_${current_time}.txt"
+
+# Execute netstat -ntulp and redirect the output to the text file
+netstat -ntulp > "$output_file"
+
+# Display success message
+echo "Netstat output has been saved to: $output_file"
+
