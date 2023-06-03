@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Check for modifications in critical boot files
+check_boot_files() {
+  # Define the critical boot files to check
+  BOOT_FILES=(
+    "/boot/vmlinuz-*"
+    "/boot/initrd.img-*"
+    "/boot/grub/grub.cfg"
+    "/boot/grub2/grub.cfg"
+    "/boot/grub/grub.cfg.old"
+    "/boot/grub2/grub.cfg.old"
+  )
+
+  for file in "${BOOT_FILES[@]}"; do
+    if [[ -e "$file" ]]; then
+      # Calculate the checksum of the boot file
+      current_checksum=$(md5sum "$file" | awk '{print $1}')
+      
+      # Compare the checksum with a known good value
+      if [[ "$current_checksum" != "EXPECTED_CHECKSUM" ]]; then
+        echo "Modified boot file detected: $file"
+      fi
+    fi
+  done
+}
+
+# Check for suspicious changes in the initramfs
+check_initramfs() {
+  # Define the path to the initramfs file
+  INITRAMFS_FILE="/boot/initrd.img-$(uname -r)"
+
+  if [[ -e "$INITRAMFS_FILE" ]]; then
+    # Extract the initramfs contents to a temporary directory
+    temp_dir=$(mktemp -d)
+    cp "$INITRAMFS_FILE" "$temp_dir/initramfs.cpio.gz"
+    cd "$temp_dir" || exit
+    gunzip initramfs.cpio.gz
+    cpio -idmv < initramfs.cpio > /dev/null 2>&1
+
+    # Check for suspicious files or modifications
+    if [[ -e "YOUR_SUSPICIOUS_FILE" ]]; then
+      echo "Suspicious file detected in initramfs: YOUR_SUSPICIOUS_FILE"
+    fi
+
+    # Cleanup
+    rm -rf "$temp_dir"
+  fi
+}
+
+# Check for suspicious changes in the MBR/GPT
+check_disk_partitions() {
+  # Retrieve the device name of the boot partition
+  boot_partition=$(df /boot | tail -1 | awk '{print $1}')
+
+  # Check for suspicious changes in the MBR/GPT
+  if [[ -n "$boot_partition" ]]; then
+    if [[ -e "/dev/$boot_partition" ]]; then
+      # Read the first 512 bytes of the boot partition
+      dd if="/dev/$boot_partition" of="mbr.bin" bs=512 count=1 > /dev/null 2>&1
+      
+      # Compare the binary hash with a known good value
+      current_hash=$(md5sum "mbr.bin" | awk '{print $1}')
+      if [[ "$current_hash" != "EXPECTED_HASH" ]]; then
+        echo "Modified MBR/GPT detected on device: /dev/$boot_partition"
+      fi
+
+      # Cleanup
+      rm -f "mbr.bin"
+    fi
+  fi
+}
+
+# Main script execution
+
+echo "Checking for bootkits on the system..."
+echo "--------------------------------------"
+
+check_boot_files
+check_initramfs
+check_disk_partitions
+
+echo "--------------------------------------"
+echo "Bootkit detection complete."
+

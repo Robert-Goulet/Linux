@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Define the threshold for suspicious processes (adjust as needed)
+THRESHOLD=50
+
+# Get the total number of running processes
+total_processes=$(ps -e | wc -l)
+
+# Check if the number of running processes exceeds the threshold
+if (( total_processes > THRESHOLD )); then
+  echo "WARNING: High number of running processes detected!"
+  echo "----------------------------------------------"
+  
+  # List the top processes consuming the most CPU
+  echo "Top CPU-consuming processes:"
+  echo "---------------------------"
+  ps -e -o pcpu,pid,user,args | sort -r -k1 | head -n 5
+  
+  echo "----------------------------------------------"
+  
+  # List the top memory-consuming processes
+  echo "Top memory-consuming processes:"
+  echo "------------------------------"
+  ps -e -o pmem,pid,user,args | sort -r -k1 | head -n 5
+else
+  echo "No suspicious processes found."
+fi
+
